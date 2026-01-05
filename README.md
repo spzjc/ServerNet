@@ -1,4 +1,7 @@
 
+````markdown
+# autodl 容器翻墙 & Conda/Pip/Git 加速手册
+
 ## 前提条件
 
 - Windows 本机安装 Clash Verge 并监听 `127.0.0.1:7897`
@@ -98,15 +101,61 @@ netstat -ano | findstr 10899
 taskkill /PID <PID> /F
 ```
 
-对，你说得对——上面那份手册主要讲了 **pip / conda / curl** 的代理，但 **git** 也可能需要代理，否则 `git clone`、`git fetch` 在国内会很慢或者失败。
+---
 
-我来帮你补充完整 git 代理配置，并整合进手册里。
+## Conda 加速方法
+
+### 1. 使用国内镜像源
+
+```bash
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r/
+conda config --set show_channel_urls yes
+```
+
+### 2. 配合 SSH / SOCKS5 代理
+
+```bash
+export ALL_PROXY=socks5h://127.0.0.1:10899
+conda config --set proxy_servers.http http://127.0.0.1:10899
+conda config --set proxy_servers.https http://127.0.0.1:10899
+```
+
+### 3. 使用 mamba（超高速替代）
+
+```bash
+conda install -n base -c conda-forge mamba
+mamba create -n myenv python=3.12
+```
 
 ---
 
-# Git 代理设置
+## pip 安装依赖加速
 
-## 1️⃣ 临时设置（当前终端有效）
+### 1. 安装 SOCKS 支持
+
+```bash
+pip install PySocks
+```
+
+### 2. 使用代理安装包
+
+```bash
+pip install --proxy socks5h://127.0.0.1:10899 -e .
+```
+
+### 3. 国内镜像（无需代理）
+
+```bash
+pip install -e . -i https://mirrors.aliyun.com/pypi/simple
+```
+
+---
+
+## Git 代理配置
+
+### 1️⃣ 临时设置（当前终端有效）
 
 ```bash
 # HTTP/HTTPS 走 SOCKS5
@@ -123,14 +172,11 @@ git config --global https.proxy 'socks5h://127.0.0.1:10899'
 git clone https://github.com/openvla/openvla.git
 ```
 
----
-
-## 2️⃣ 关闭 Git 代理
+### 2️⃣ 关闭 Git 代理
 
 ```bash
 git config --global --unset http.proxy
 git config --global --unset https.proxy
 ```
-
 
 
